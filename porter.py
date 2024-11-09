@@ -6,6 +6,9 @@ import re
 VOWEL = '[аёеиоуыэюя]' 
 CONSONANT = '[^аёеиоуыэюя]' 
 
+# не правильный индекс для r2
+# не обработаны случаи с ненайденными rv, r1, r2
+# не должно резать а или я в [ая]
 PERFECTIVE_GERUNDS = '([ая](вшись|вши|в)|(ившись|ывшись|ивши|ывши|ив|ыв))$'
 PARTICIPLE = '[ая](ем|нн|вш|ющ|щ)|(ивш|ывш|ующ)'
 VERB = '([ая](ете|йте|ешь|нно|ла|на|ли|ем|ло|но|ет|ют|ны|ть|й|л|н)|(ейте|уйте|ила|ыла|ена|ите|или|ыли|ило|ыло|ено|ует|уют|ены|ить|ыть|ишь|ей|уй|ил|ыл|им|ым|ен|ят|ит|ыт|ую|ю))$'
@@ -17,15 +20,16 @@ REFLEXIVES = '(с[яь])$'
 SUPERLATIVE = '(ейше|ейш)$'
 DERIVATIONAL = '(ость|ост)$'
 
-def find_region(pattern: str, word: str, is_rv: bool = False) -> str:
+# FIX: нужно находить индексы областей, а не составлять новые слова!
+def find_region(pattern: str, word: str, is_rv: bool = False) -> int:
     match = re.search(pattern, word)
     if not match:
-        return ''
+        return None
     ind = match.end()
     if is_rv and word[ind-1] in "ая":
         ind -= 1
     
-    return word[ind:]
+    return ind
     
 def get_word_base(word: str) -> str:
     if not word:
@@ -34,22 +38,25 @@ def get_word_base(word: str) -> str:
     word = word.lower()
     rv = find_region(VOWEL, word, is_rv=True)
     r1 = find_region(VOWEL + CONSONANT, word)
-    r2 = find_region(VOWEL + CONSONANT, r1)
+    r2 = find_region(VOWEL + CONSONANT, word[r1:])
+
+    if not rv:
+        return word
 
     # Step 1: 
     # - Если есть perfective_gerund удалить и перейти к Step 2
     # - Если нет, то удалить reflexive с конца слова, 
     # затем adjectival, VERB, NOUN - как только одно из них найденно, шаг завершается
-    if re.search(PERFECTIVE_GERUNDS, rv):
+    if re.search(PERFECTIVE_GERUNDS, word[rv:]):
         word = re.sub(PERFECTIVE_GERUNDS, '', word)
     else:
         word = re.sub(REFLEXIVES, '', word)
-        if re.search(PARTICIPLE, rv) or re.search(ADJECTIVE, rv):
+        if re.search(PARTICIPLE, word[rv:]) or re.search(ADJECTIVE, word[rv:]):
             word = re.sub(PARTICIPLE, '', word)
             word = re.sub(ADJECTIVE, '', word)
-        elif re.search(VERB, rv):
+        elif re.search(VERB, word[rv:]):
             word = re.sub(VERB, '', word)
-        elif re.search(NOUN, rv):
+        elif re.search(NOUN, word[rv:]):
             word = re.sub(NOUN, '', word)
 
     # Step 2: если слово оканчивается на И, удаляем
@@ -57,7 +64,7 @@ def get_word_base(word: str) -> str:
         word = word[:-1]
 
     # Step 3: если в r2 найдется DERIVATIONAL, удаляем
-    if re.search(DERIVATIONAL, r2):
+    if re.search(DERIVATIONAL, word[r2:]):
         word = re.sub(DERIVATIONAL, '', word)
     
     # Step 4: 
@@ -66,7 +73,7 @@ def get_word_base(word: str) -> str:
     # - Если слово оканчивается на Ь удаляем его 
     if word.endswith('нн'):
         word = word[:-1]
-    elif re.search(SUPERLATIVE, word):
+    elif re.search(SUPERLATIVE, word[rv:]):
         word = re.sub(SUPERLATIVE, '', word)
         if word.endswith('нн'):
             word = word[:-1]
@@ -85,8 +92,9 @@ def norm(word: str) -> str:
 
 if __name__ == '__main__':
     words = ['гналась', 'противоестесвтенном', 'выживший', 'забегавшись', 'неотвратимость']
+    problem_words = ['гналась', 'забегавшись', 'вал'] # гнал забега вал
     bases = []
-    for word in words:
+    for word in problem_words:
         base = get_word_base(word)
         bases.append(base)
     
