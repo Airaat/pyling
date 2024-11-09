@@ -1,13 +1,12 @@
 import re
 # TODO: 
-# - 
 # - вынести константы в отдельный enum
 # - оформить решение в виде класса
 
 VOWEL = '[аёеиоуыэюя]' 
 CONSONANT = '[^аёеиоуыэюя]' 
 
-PERFECTIVE_GERUNDS = '[ая](вшись|вши|в)|(ившись|ывшись|ивши|ывши|ив|ыв)'
+PERFECTIVE_GERUNDS = '([ая](вшись|вши|в)|(ившись|ывшись|ивши|ывши|ив|ыв))$'
 PARTICIPLE = '[ая](ем|нн|вш|ющ|щ)|(ивш|ывш|ующ)'
 VERB = '([ая](ете|йте|ешь|нно|ла|на|ли|ем|ло|но|ет|ют|ны|ть|й|л|н)|(ейте|уйте|ила|ыла|ена|ите|или|ыли|ило|ыло|ено|ует|уют|ены|ить|ыть|ишь|ей|уй|ил|ыл|им|ым|ен|ят|ит|ыт|ую|ю))$'
 
@@ -47,7 +46,7 @@ def get_word_base(word: str) -> str:
         word = re.sub(PERFECTIVE_GERUNDS, '', word)
     elif re.search(REFLEXIVES, rv):
         word = re.sub(REFLEXIVES, '', word)
-
+    else:
         pattern = PARTICIPLE + ADJECTIVE
         if re.search(pattern, rv):
             word = re.sub(pattern, '', word)
