@@ -21,9 +21,8 @@ def find_region(pattern: str, word: str, is_rv: bool = False) -> str:
     match = re.search(pattern, word)
     if not match:
         return ''
-    
     ind = match.end()
-    if is_rv and match[0] in "ая":
+    if is_rv and word[ind-1] in "ая":
         ind -= 1
     
     return word[ind:]
@@ -33,7 +32,6 @@ def get_word_base(word: str) -> str:
         raise ValueError("Строка не должна быть пустой")
     
     word = word.lower()
-
     rv = find_region(VOWEL, word, is_rv=True)
     r1 = find_region(VOWEL + CONSONANT, word)
     r2 = find_region(VOWEL + CONSONANT, r1)
@@ -44,12 +42,11 @@ def get_word_base(word: str) -> str:
     # затем adjectival, VERB, NOUN - как только одно из них найденно, шаг завершается
     if re.search(PERFECTIVE_GERUNDS, rv):
         word = re.sub(PERFECTIVE_GERUNDS, '', word)
-    elif re.search(REFLEXIVES, rv):
-        word = re.sub(REFLEXIVES, '', word)
     else:
-        pattern = PARTICIPLE + ADJECTIVE
-        if re.search(pattern, rv):
-            word = re.sub(pattern, '', word)
+        word = re.sub(REFLEXIVES, '', word)
+        if re.search(PARTICIPLE, rv) or re.search(ADJECTIVE, rv):
+            word = re.sub(PARTICIPLE, '', word)
+            word = re.sub(ADJECTIVE, '', word)
         elif re.search(VERB, rv):
             word = re.sub(VERB, '', word)
         elif re.search(NOUN, rv):
