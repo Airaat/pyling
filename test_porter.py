@@ -1,6 +1,6 @@
 import csv
 import unittest
-from porter import PorterStemmer as ps
+from reporter import RePorterStemmer as ps
 
 class TestPorterStemmer(unittest.TestCase):
 
@@ -21,7 +21,7 @@ class TestPorterStemmer(unittest.TestCase):
             'выживший':'выж',
             'забегавшись':'забега',
             'неотвратимость':'неотвратим',
-            # 'падшему':'падш'
+            'падшему':'падш'
         }
         
         for word, expected in words.items():
