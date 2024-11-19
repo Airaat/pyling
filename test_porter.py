@@ -1,6 +1,8 @@
+#!/usr/bin/env python3
 import csv
 import unittest
 from porter import stem
+
 
 class TestPorterStemmer(unittest.TestCase):
 
@@ -17,16 +19,17 @@ class TestPorterStemmer(unittest.TestCase):
     def test_custom(self):
         words = {
             'гналась': 'гнал',
-            'противоестесвтенном':'противоестесвтен',
-            'выживший':'выж',
-            'забегавшись':'забега',
-            'неотвратимость':'неотвратим',
-            'падшему':'падш'
+            'противоестесвтенном': 'противоестесвтен',
+            'выживший': 'выж',
+            'забегавшись': 'забега',
+            'неотвратимость': 'неотвратим',
+            'падшему': 'падш'
         }
-        
+
         for word, expected in words.items():
             stemmed = stem(word)
             self.assertEqual(stemmed, expected)
-            
+
+
 if __name__ == '__main__':
     unittest.main()
