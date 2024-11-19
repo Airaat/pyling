@@ -33,9 +33,9 @@ def find_regions(word: str) -> tuple[int, int]:
     return rv, r2
 
 
-def cut_first(word: str, rv: int, *patterns) -> str:
+def cut_first(word: str, indx: int, *patterns) -> str:
     for pattern in patterns:
-        match = re.search(pattern, word[rv:])
+        match = re.search(pattern, word[indx:])
         if match:
             pattern = match.group() + "$"
             return re.sub(pattern, '', word, 1)
@@ -63,8 +63,7 @@ def stem(word: str) -> str:
         word = word[:-1]
 
     # Step 3
-    if re.search(DERIVATIONAL, word[r2:]):
-        word = cut(DERIVATIONAL, word)
+    word = cut_first(word, r2, DERIVATIONAL)
 
     # Step 4
     if word.endswith('нн'):
