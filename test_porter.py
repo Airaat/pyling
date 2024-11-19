@@ -1,18 +1,18 @@
 import csv
 import unittest
-from reporter import RePorterStemmer as ps
+from porter import stem
 
 class TestPorterStemmer(unittest.TestCase):
 
     def test_empty(self):
         with self.assertRaises(ValueError):
-            ps.stem('')
+            stem('')
 
     def test_csv_sample(self):
         with open('test_sample.csv', newline='') as csvfile:
             csvreader = csv.reader(csvfile)
             for word, expected in csvreader:
-                self.assertEqual(ps.stem(word), expected)
+                self.assertEqual(stem(word), expected)
 
     def test_custom(self):
         words = {
@@ -25,7 +25,7 @@ class TestPorterStemmer(unittest.TestCase):
         }
         
         for word, expected in words.items():
-            stemmed = ps.stem(word)
+            stemmed = stem(word)
             self.assertEqual(stemmed, expected)
             
 if __name__ == '__main__':
