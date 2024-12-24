@@ -1,31 +1,55 @@
 from nltk.grammar import CFG
 from nltk.parse import ChartParser, ShiftReduceParser, RecursiveDescentParser
 from nltk.tree import TreePrettyPrinter
+from nltk.tokenize import word_tokenize
+
+
+def sanitize(sentence: str) -> list[str]:
+    """Removes punctuation and casts to lower case"""
+    words = word_tokenize(sentence.lower())
+    result = [word for word in words if word.isalpha()]
+    return result
+
 
 # Treasure Island. Robert Stevenson
-dataset = [
-    "человек он был молчаливый",
-    "Целыми днями бродил по берегу бухты или взбирался на скалы с медной подзорной трубой.",
-    "По вечерам он сидел в общей комнате в самом углу, у огня, и пил ром, слегка разбавляя его водой.",
-    "Он не отвечал, если с ним заговаривали.",
-    "Только окинет свирепым взглядом и засвистит носом, как корабельная сирена в тумане.",
-    "Вскоре мы и наши посетители научились оставлять его в покое."
-]
-
-grammar = CFG.fromstring("""
+dataset = {
+    "Человек он был молчаливый.": """
     S -> NP VP
-    NP -> N NP | 'он'
-    VP -> V Adj
-    N -> 'человек'
+    NP -> N
+    VP -> N V Adj
+    N -> 'человек' | 'он'
     Adj -> 'молчаливый'
     V -> 'был'
-""")
+""",
+    "Целыми днями бродил по берегу бухты или взбирался на скалы с медной подзорной трубой.": """
+    S -> AP VP Conj VP NP
+    VP -> V NP
+    Conj -> 'или'
+    AP -> Adj N | P Adj N
+    NP -> PP N | PP AP N
+    PP -> P N
+    V -> 'бродил' | 'взбирался'
+    N -> 'днями' | 'берегу' | 'бухты' | 'скалы' | 'трубой'
+    P -> 'по' | 'на' | 'с'
+    Adj -> 'целыми' | 'медной' | 'подзорной'
+""",
+    "По вечерам он сидел в общей комнате в самом углу, у огня, и пил ром, слегка разбавляя его водой.": None,
+    "Он не отвечал, если с ним заговаривали.": None,
+    "Только окинет свирепым взглядом и засвистит носом, как корабельная сирена в тумане.": None,
+    "Вскоре мы и наши посетители научились оставлять его в покое.": None,
+}
 
+for sentence, schema in dataset.items():
+    if not schema:
+        continue
 
-sent = dataset[0].split()
-parser = ChartParser(grammar)
+    grammar = CFG.fromstring(schema)
+    parser = ChartParser(grammar)
 
-trees = parser.parse_all(sent)
-tpp = TreePrettyPrinter(trees[0])
+    tokinized = sanitize(sentence)
+    trees = parser.parse_all(tokinized)
 
-print(tpp.text())
+    if len(trees) > 0:
+        tpp = TreePrettyPrinter(trees[0])
+
+        print(tpp.text())
