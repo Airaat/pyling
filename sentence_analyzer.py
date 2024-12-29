@@ -22,10 +22,10 @@ dataset = {
     V -> 'был'
 """,
     "Целыми днями бродил по берегу бухты или взбирался на скалы с медной подзорной трубой.": """
-    S -> AP VP Conj VP NP
-    VP -> V NP
+    S -> VP Conj VP
+    VP -> AP V NP | V PP AP
     Conj -> 'или'
-    AP -> Adj N | P Adj N
+    AP -> Adj N | P Adj Adj N
     NP -> PP N | PP AP N
     PP -> P N
     V -> 'бродил' | 'взбирался'
