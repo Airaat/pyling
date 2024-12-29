@@ -1,5 +1,5 @@
 from nltk.grammar import CFG
-from nltk.parse import ChartParser, ShiftReduceParser, RecursiveDescentParser
+from nltk.parse import ChartParser
 from nltk.tree import TreePrettyPrinter
 from nltk.tokenize import word_tokenize
 
