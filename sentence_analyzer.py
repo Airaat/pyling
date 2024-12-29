@@ -11,8 +11,26 @@ def sanitize(sentence: str) -> list[str]:
     return result
 
 
+def display_grammar_tree(data: dict[str, str]) -> None:
+    """Display CFG trees"""
+    for sentence, schema in data.items():
+        if not schema:
+            continue
+
+        grammar = CFG.fromstring(schema)
+        parser = ChartParser(grammar)
+
+        tokinized = sanitize(sentence)
+        trees = parser.parse_all(tokinized)
+
+        if len(trees) > 0:
+            tpp = TreePrettyPrinter(trees[0])
+
+            print(tpp.text())
+
+
 # Treasure Island. Robert Stevenson
-dataset = {
+DATASET = {
     "Человек он был молчаливый.": """
     S -> NP VP
     NP -> N
@@ -90,17 +108,5 @@ dataset = {
 """,
 }
 
-for sentence, schema in dataset.items():
-    if not schema:
-        continue
-
-    grammar = CFG.fromstring(schema)
-    parser = ChartParser(grammar)
-
-    tokinized = sanitize(sentence)
-    trees = parser.parse_all(tokinized)
-
-    if len(trees) > 0:
-        tpp = TreePrettyPrinter(trees[0])
-
-        print(tpp.text())
+if __name__ == "__main__":
+    display_grammar_tree(DATASET)
