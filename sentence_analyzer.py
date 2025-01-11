@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 import json
+from collections import defaultdict
+
+import pymorphy3
 from nltk.grammar import CFG, DependencyGrammar
 from nltk.parse import ChartParser, ProjectiveDependencyParser
 from nltk.tree import TreePrettyPrinter
@@ -51,9 +54,29 @@ def display_dg_tree(data: dict) -> None:
             print(str(e))
 
 
+def div_by_pos(sentence: str, lang: str = 'ru') -> dict:
+    """
+    Divides words in a sentence by part of speech using pymorphy3.
+    """
+
+    result = defaultdict(list)
+    morph = pymorphy3.MorphAnalyzer(lang=lang)
+
+    for token in sanitize(sentence):
+        parsed = morph.parse(token)[0]
+        part_of_speech = parsed.tag.POS or 'unknown'
+        result[part_of_speech].append(parsed.word)
+
+    return {pos: sorted(words) for pos, words in result.items()}
+
+
 if __name__ == "__main__":
 
     with open("dataset.json", "r", encoding='utf8') as json_file:
         DATASET = json.load(json_file)
 
-    display_cfg_tree(DATASET)
+    # display_cfg_tree(DATASET)
+
+    for sentence in DATASET:
+        parsed = div_by_pos(sentence)
+        print(parsed)
