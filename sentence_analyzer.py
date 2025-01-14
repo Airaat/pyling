@@ -5,14 +5,18 @@ from collections import defaultdict
 import pymorphy3
 from nltk.grammar import CFG, DependencyGrammar
 from nltk.parse import ChartParser, ProjectiveDependencyParser
-from nltk.tree import TreePrettyPrinter
 from nltk.tokenize import word_tokenize
+
+# TODO:
+# 1. Подробное отображение информации о каждом фрейме
+# 2. Отображение нескольких деревьев на одном экране
+# 3. Функция для построения дерева частей речи
 
 
 def sanitize(sentence: str) -> list[str]:
     """Removes punctuation and casts to lower case"""
     words = word_tokenize(sentence.lower())
-    result = [word for word in words if word.isalpha()]
+    result = [word for word in words if word.isalnum()]
     return result
 
 
@@ -22,16 +26,16 @@ def display_cfg_tree(data: dict) -> None:
         if not schema["CFG"]:
             continue
 
+        if schema["Core"] and schema["Non-Core"]:
+            print(f'Core: {schema["Core"]}')
+            print(f'Non-Core: {schema["Non-Core"]}\n')
+
         grammar = CFG.fromstring(schema["CFG"])
         parser = ChartParser(grammar)
 
         tokinized = sanitize(sentence)
-        trees = parser.parse_all(tokinized)
-
-        if len(trees) > 0:
-            tpp = TreePrettyPrinter(trees[0])
-
-            print(tpp.text())
+        for tree in parser.parse(tokinized):
+            tree.draw()
 
 
 def display_dg_tree(data: dict) -> None:
@@ -75,8 +79,8 @@ if __name__ == "__main__":
     with open("dataset.json", "r", encoding='utf8') as json_file:
         DATASET = json.load(json_file)
 
-    # display_cfg_tree(DATASET)
+    display_cfg_tree(DATASET["FrameNet"])
 
-    for sentence in DATASET:
-        parsed = div_by_pos(sentence)
-        print(parsed)
+    # for sentence in DATASET:
+    #     parsed = div_by_pos(sentence)
+    #     print(parsed)
